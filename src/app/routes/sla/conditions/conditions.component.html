@@ -1,0 +1,128 @@
+<form
+  nz-form
+  [formGroup]="form"
+  (ngSubmit)="submit()"
+  se-container="1"
+  labelWidth="120"
+>
+  <se label="Label" required>
+    <input formControlName="labelName" nz-input required />
+  </se>
+  <se label="SLA Type" required>
+    <nz-radio-group
+      class="mr-md"
+      formControlName="conditionType"
+      (ngModelChange)="slaTypeChange($event)"
+    >
+      <label nz-radio-button [nzValue]="'BACKEND'">
+        <span>Backend</span>
+      </label>
+      <label nz-radio-button [nzValue]="'API'">
+        <span>API</span>
+      </label>
+      <label nz-radio-button [nzValue]="'WEB'">
+        <span>Web</span>
+      </label>
+    </nz-radio-group>
+  </se>
+  <!-- WEB -->
+  <se label="Domain" required *ngIf="selectedConditionType == 'WEB'">
+    <input
+      formControlName="domain"
+      placeholder="https://domain.karros.com/abc"
+      nz-input
+    />
+  </se>
+
+  <!-- API -->
+  <se label="Method" required *ngIf="selectedConditionType == 'API'">
+    <nz-input-group [nzAddOnBefore]="addOnBeforeTemplate">
+      <input
+        type="text"
+        formControlName="domain"
+        nz-input
+        placeholder="https://domain.karros.com/abc"
+        style="width: calc(100%)"
+      />
+    </nz-input-group>
+    <ng-template #addOnBeforeTemplate>
+      <nz-select formControlName="method" style="width: 80px">
+        <nz-option nzLabel="GET" nzValue="GET"></nz-option>
+        <nz-option nzLabel="POST" nzValue="POST"></nz-option>
+        <nz-option nzLabel="PUT" nzValue="PUT"></nz-option>
+        <nz-option nzLabel="DELETE" nzValue="DELETE"></nz-option>
+      </nz-select>
+    </ng-template>
+  </se>
+
+  <se labelWidth="0" *ngIf="selectedConditionType == 'API'">
+    <nz-tabset nzAnimated="false">
+      <nz-tab nzTitle="Headers">
+        <textarea formControlName="headers" rows="4" nz-input></textarea>
+      </nz-tab>
+      <nz-tab nzTitle="Body">
+        <textarea formControlName="body" rows="4" nz-input></textarea>
+      </nz-tab>
+    </nz-tabset>
+  </se>
+  <!-- <se label="Operator" required *ngIf="selectedConditionType == 'API'">
+    <nz-input-group nzCompact>
+      <nz-select formControlName="operatorType" style="width: 100px">
+        <nz-option [nzLabel]="'String'" [nzValue]="'String'"></nz-option>
+        <nz-option [nzLabel]="'JSON'" [nzValue]="'JSON'"></nz-option>
+      </nz-select>
+      <input
+        formControlName="operatorComparationValue"
+        nz-input
+        style="width: calc(100% - 200px)"
+      />
+    </nz-input-group>
+  </se> -->
+  <!-- Backend Criteria -->
+  <se label="Environment" required *ngIf="selectedConditionType == 'BACKEND'">
+    <nz-select
+      formControlName="environment"
+      nzPlaceHolder="Select environment"
+      (ngModelChange)="_loadService($event)"
+    >
+      <nz-option [nzLabel]="'Develop'" [nzValue]="'dev'"></nz-option>
+      <nz-option [nzLabel]="'Staging'" [nzValue]="'stage'"></nz-option>
+      <nz-option [nzLabel]="'Demo'" [nzValue]="'demo'"></nz-option>
+      <nz-option [nzLabel]="'Production'" [nzValue]="'prod'"></nz-option>
+    </nz-select>
+  </se>
+  <se label="Service" required *ngIf="selectedConditionType == 'BACKEND'">
+    <nz-select
+      formControlName="service"
+      [nzShowSearch]="true"
+      [nzPlaceHolder]="'Select service'"
+    >
+      <nz-option
+        *ngFor="let o of services"
+        [nzValue]="o"
+        [nzLabel]="o"
+      ></nz-option>
+    </nz-select>
+    <nz-autocomplete></nz-autocomplete>
+  </se>
+  <se label="Operator" required *ngIf="selectedConditionType == 'BACKEND'">
+    <nz-input-group nzCompact>
+      <nz-select formControlName="operatorType" style="width: 100px">
+        <nz-option [nzLabel]="'Number'" [nzValue]="'Number'"></nz-option>
+        <nz-option [nzLabel]="'String'" [nzValue]="'String'"></nz-option>
+      </nz-select>
+      <nz-select formControlName="operator" style="width: 100px">
+        <nz-option [nzLabel]="'>'" [nzValue]="'>'"></nz-option>
+        <nz-option [nzLabel]="'>='" [nzValue]="'>='"></nz-option>
+        <nz-option [nzLabel]="'='" [nzValue]="'='"></nz-option>
+        <nz-option [nzLabel]="'\<'" [nzValue]="'\<'"></nz-option>
+        <nz-option [nzLabel]="'\<='" [nzValue]="'\<='"></nz-option>
+      </nz-select>
+      <input
+        formControlName="operatorComparationValue"
+        nz-input
+        style="width: calc(100% - 200px)"
+      />
+    </nz-input-group>
+  </se>
+</form>

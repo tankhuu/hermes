@@ -1,0 +1,78 @@
+<page-header></page-header>
+
+<nz-list
+  [nzLoading]="loading"
+  [nzDataSource]="list"
+  [nzRenderItem]="item"
+  [nzGrid]="{ gutter: 24, lg: 8, md: 12, sm: 24, xs: 24 }"
+>
+  <ng-template #item let-item>
+    <nz-list-item>
+      <button
+        *ngIf="item === null"
+        nz-button
+        (click)="createNewSLA('add')"
+        nzType="dashed"
+        style="width: 100%; height: 200px"
+      >
+        <i nz-icon nzType="plus"></i>
+        <span>Create New SLA</span>
+      </button>
+      <nz-spin [nzSpinning]="item != null && excuseId == item.id">
+        <nz-card nzHoverable *ngIf="item !== null" [nzActions]="[op1, op2]">
+          <nz-card-meta
+            [nzAvatar]="nzAvatar"
+            [nzTitle]="nzTitle"
+            [nzDescription]="nzDescription"
+          >
+            <ng-template #nzAvatar>
+              <nz-avatar
+                nzSize="large"
+                [nzSrc]="'./assets/tmp/img/logo-hermes.png'"
+              ></nz-avatar>
+            </ng-template>
+            <ng-template #op1>
+              <a (click)="excuseSLA(item)">Execute</a>
+            </ng-template>
+            <ng-template #op2>
+              <a (click)="viewDetail(item.id)">Detail</a>
+            </ng-template>
+
+            <ng-template #nzTitle>
+              <a>{{ item.name }}</a>
+            </ng-template>
+            <ng-template #nzDescription>
+              <sv-container size="small" col="1">
+                <sv label="Last status">
+                  <div class="inner-box">
+                    <nz-tag
+                      [nzColor]="'green'"
+                      *ngIf="item.lastExecution && checkStatus(item)"
+                      >Successful</nz-tag
+                    >
+                    <nz-tag
+                      [nzColor]="'red'"
+                      *ngIf="item.lastExecution && !checkStatus(item)"
+                      >Failed</nz-tag
+                    >
+                    {{
+                      item.lastExecution
+                        ? (item.lastExecution.createdTime | _date)
+                        : "N/A"
+                    }}
+                  </div>
+                </sv>
+                <sv label="Next execution:">{{
+                  item.nextExecutionTime
+                    ? (item.nextExecutionTime | _date)
+                    : "N/A"
+                }}</sv>
+                <sv label="Schedule">{{ schedule(item) }}</sv>
+              </sv-container>
+            </ng-template>
+          </nz-card-meta>
+        </nz-card>
+      </nz-spin>
+    </nz-list-item>
+  </ng-template>
+</nz-list>

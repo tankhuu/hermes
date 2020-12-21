@@ -1,0 +1,275 @@
+<page-header [title]="title">
+  Customize your service level agreement
+</page-header>
+<form nz-form [formGroup]="form" [nzLayout]="'horizontal'">
+  <nz-card [nzBordered]="false" nzTitle="Information" [nzExtra]="extraOp">
+    <ng-template #extraOp>
+      <button nz-button nzType="primary" (click)="open()">
+        Select Public Template
+      </button>
+      <nz-drawer
+        [nzWidth]="400"
+        [nzClosable]="false"
+        [nzVisible]="visible"
+        nzPlacement="right"
+        nzTitle="Select template"
+        (nzOnClose)="close()"
+      >
+        <ng-container *nzDrawerContent>
+          <nz-list
+            [nzDataSource]="templateSLAList"
+            [nzLoading]="loading"
+            [nzRenderItem]="item"
+          >
+            <ng-template #item let-item>
+              <nz-list-item [nzActions]="[edit]">
+                <ng-template #edit>
+                  <a (click)="selectTemplate(item)">Select</a>
+                </ng-template>
+
+                <nz-list-item-meta
+                  [nzTitle]="nzTitle"
+                  [nzDescription]="item.subDescription"
+                >
+                  <ng-template #nzTitle>
+                    <a target="_blank">{{ item.name }}</a>
+                  </ng-template>
+                </nz-list-item-meta>
+              </nz-list-item>
+            </ng-template>
+          </nz-list>
+        </ng-container>
+      </nz-drawer>
+    </ng-template>
+    <nz-row nzGutter="16">
+      <nz-col nzLg="12" nzMd="12" nzSm="24">
+        <nz-form-item>
+          <nz-form-label nzFor="name">Name</nz-form-label>
+          <nz-form-control nzErrorTip="Name is required">
+            <input
+              nz-input
+              formControlName="name"
+              id="name"
+              placeholder="Name"
+            />
+          </nz-form-control>
+        </nz-form-item>
+      </nz-col>
+    </nz-row>
+  </nz-card>
+  <nz-card [nzBordered]="false" nzTitle="Conditions" [nzExtra]="condition">
+    <ng-template #condition>
+      <button nz-button nzType="primary" (click)="_addConditions()">Add</button>
+    </ng-template>
+
+    <nz-table #basicTable [nzData]="data">
+      <thead>
+        <tr>
+          <th>Label</th>
+          <th>Type</th>
+          <th>Condition</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let data of basicTable.data">
+          <td>{{ data.labelName }}</td>
+          <td>
+            <nz-tag nzColor="processing">{{ data.conditionType }}</nz-tag>
+          </td>
+          <td>
+            <nz-row nzGutter="16" *ngIf="data.conditionType == 'BACKEND'">
+              <nz-col nzLg="6" nzMd="12" nzSm="24">
+                <nz-form-item>
+                  <nz-form-label nzFor="name">Service</nz-form-label>
+                  <nz-form-control> {{ data.service }} </nz-form-control>
+                </nz-form-item>
+              </nz-col>
+              <nz-col
+                [nzXl]="{ span: 6, offset: 2 }"
+                [nzLg]="{ span: 8 }"
+                [nzMd]="{ span: 12 }"
+                nzSm="24"
+              >
+                <nz-form-item>
+                  <nz-form-label>Environment</nz-form-label>
+                  <nz-form-control> {{ data.environment }} </nz-form-control>
+                </nz-form-item>
+              </nz-col>
+              <nz-col
+                [nzXl]="{ span: 8, offset: 2 }"
+                [nzLg]="{ span: 10 }"
+                [nzMd]="{ span: 24 }"
+                nzSm="24"
+              >
+                <nz-form-item>
+                  <nz-form-label>Operator</nz-form-label>
+                  <nz-form-control>
+                    {{ data.operatorType }} {{ data.operator }}
+                    {{ data.operatorComparationValue }}
+                  </nz-form-control>
+                </nz-form-item>
+              </nz-col>
+            </nz-row>
+
+            <nz-row nzGutter="16" *ngIf="data.conditionType == 'API'">
+              <nz-col nzLg="6" nzMd="12" nzSm="24">
+                <nz-form-item>
+                  <nz-form-label nzFor="name">Domain</nz-form-label>
+                  <nz-form-control> {{ data.domain }} </nz-form-control>
+                </nz-form-item>
+              </nz-col>
+              <!-- <nz-col
+                [nzXl]="{ span: 6, offset: 2 }"
+                [nzLg]="{ span: 8 }"
+                [nzMd]="{ span: 12 }"
+                nzSm="24"
+              >
+                <nz-form-item>
+                  <nz-form-label>Operator</nz-form-label>
+                  <nz-form-control>
+                    {{ data.operatorType }} {{ data.operator }}
+                  </nz-form-control>
+                </nz-form-item>
+              </nz-col> -->
+            </nz-row>
+
+            <nz-row nzGutter="16" *ngIf="data.conditionType == 'WEB'">
+              <nz-col nzLg="6" nzMd="12" nzSm="24">
+                <nz-form-item>
+                  <nz-form-label nzFor="name">Domain</nz-form-label>
+                  <nz-form-control> {{ data.domain }} </nz-form-control>
+                </nz-form-item>
+              </nz-col>
+            </nz-row>
+          </td>
+          <td>
+            <a (click)="deleteRow(data.labelName)">Delete</a>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+  <nz-card [nzBordered]="false" nzTitle="Schedule">
+    <nz-row nzGutter="16">
+      <nz-col nzLg="6" nzMd="12" nzSm="24">
+        <nz-form-item>
+          <nz-form-label>Frequency</nz-form-label>
+          <nz-form-control>
+            <nz-select
+              (ngModelChange)="frequencyChange($event)"
+              formControlName="scheduleFrequency"
+            >
+              <nz-option [nzLabel]="'Minute'" [nzValue]="'minute'"></nz-option>
+              <nz-option [nzLabel]="'Hour'" [nzValue]="'hour'"></nz-option>
+              <nz-option [nzLabel]="'Daily'" [nzValue]="'daily'"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </nz-col>
+
+      <nz-col nzLg="6" nzMd="12" nzSm="24">
+        <nz-form-item>
+          <nz-form-label nzFor="scheduleEvery">Every</nz-form-label>
+          <nz-form-control nzErrorTip="Every is required and number only!">
+            <nz-input-group [nzAddOnAfter]="scheduleEveryValue">
+              <input
+                id="scheduleEvery"
+                nz-input
+                formControlName="scheduleEvery"
+                placeholder="1"
+                (keydown)="scheduleEveryChange($event)"
+              />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+      </nz-col>
+    </nz-row>
+  </nz-card>
+
+  <nz-card [nzBordered]="false" nzTitle="Channel">
+    <nz-checkbox-wrapper style="width: 100%" (nzOnChange)="log($event)">
+      <nz-form-item>
+        <nz-form-label nzNoColon="true">
+          <label
+            nz-checkbox
+            nzValue="GOOGLE_CHAT"
+            formControlName="googleCheckbox"
+            >Google Chat</label
+          ></nz-form-label
+        >
+        <nz-form-control>
+          <nz-select
+            nzMode="tags"
+            nzPlaceHolder="Room ID"
+            formControlName="googleChannel"
+            (ngModelChange)="googleChannelChange($event)"
+          >
+            <!-- <nz-option *ngFor="let option of listOfOption" [nzLabel]="option.label" [nzValue]="option.value"></nz-option> -->
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzNoColon="true">
+          <label nz-checkbox nzValue="EMAIL" formControlName="emailCheckbox"
+            >Email</label
+          ></nz-form-label
+        >
+        <nz-form-control>
+          <nz-select
+            nzMode="tags"
+            nzPlaceHolder="email"
+            formControlName="emailChannel"
+            (ngModelChange)="emailChannelChange($event)"
+          >
+            <!-- <nz-option *ngFor="let option of listOfOption" [nzLabel]="option.label" [nzValue]="option.value"></nz-option> -->
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzNoColon="true">
+          <label nz-checkbox nzValue="LIGHT" formControlName="lightCheckbox"
+            >Light</label
+          ></nz-form-label
+        >
+        <nz-form-control>
+          <!-- <input nz-input formControlName="email" id="email" /> -->
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzNoColon="true">
+          <label nz-checkbox nzValue="VOICE" formControlName="voiceCheckbox"
+            >Voice</label
+          ></nz-form-label
+        >
+      </nz-form-item>
+    </nz-checkbox-wrapper>
+
+    <nz-form-item>
+      <nz-form-label nzFor="message" nzNoColon="true"></nz-form-label>
+      <nz-form-control nzErrorTip="Message is required">
+        <textarea
+          id="message"
+          nz-input
+          placeholder="Example: Hi all, condition {label} "
+          [nzAutosize]="{ minRows: 5 }"
+          formControlName="message"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </nz-card>
+  <footer-toolbar errorCollect>
+    <button nz-button nzDanger (click)="cancelCreate()">Cancel</button>
+    <button
+      nz-button
+      type="primary"
+      nzType="primary"
+      (click)="_submitForm($event)"
+    >
+      Save
+    </button>
+  </footer-toolbar>
+</form>

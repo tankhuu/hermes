@@ -1,0 +1,170 @@
+<page-header [title]="getName" [logo]="logo" [action]="action" [extra]="extra">
+  <ng-template #logo>
+    <img
+      src="https://gw.alipayobjects.com/zos/rmsportal/nxkuOJlFJuAUhzlMTCEe.png"
+    />
+  </ng-template>
+  <ng-template #action>
+    <nz-button-group>
+      <button nz-button [nzLoading]="excuseLoading" (click)="excuseSLA($event)">
+        Execute
+      </button>
+      <button nz-button (click)="navigateEditSLA($event)">Edit</button>
+    </nz-button-group>
+    <button
+      nz-button
+      nz-dropdown
+      class="mx-sm"
+      nz-button
+      nz-popconfirm
+      nzPopconfirmTitle="Are you sure delete this SLA?"
+      (nzOnConfirm)="deleteSLA($event)"
+      nzDanger
+    >
+      <i nz-icon nzType="delete"></i>
+    </button>
+  </ng-template>
+  <ng-template #extra>
+    <div nz-row>
+      <div nz-col nzXs="24" nzSm="12"></div>
+      <div nz-col nzXs="24" nzSm="12">
+        <p class="text-grey">Mask as template</p>
+        <nz-switch
+          [nzControl]="true"
+          [ngModel]="switchTemplateValue"
+          [nzCheckedChildren]="checkedTemplate"
+          [nzUnCheckedChildren]="unCheckedTemplate"
+          [nzLoading]="templateLoading"
+          (click)="maskAsTemplate()"
+        ></nz-switch>
+        <ng-template #checkedTemplate
+          ><i nz-icon nzType="check"></i
+        ></ng-template>
+        <ng-template #unCheckedTemplate
+          ><i nz-icon nzType="close"></i
+        ></ng-template>
+      </div>
+    </div>
+  </ng-template>
+  <!-- <ng-template #tab>
+    <nz-tabset>
+      <nz-tab nzTitle="Conditions"></nz-tab>
+      <nz-tab nzTitle="History"></nz-tab>
+    </nz-tabset>
+  </ng-template> -->
+  <sv-container size="small" col="2">
+    <sv label="Created date">{{
+      slaData != null ? (slaData.createdTime | _date) : "--"
+    }}</sv>
+    <sv label="Channels">{{ this.channels }}</sv>
+    <sv label="Total Condition">{{ totalCondition }}</sv>
+    <sv label="Schedule">{{ schedule }}</sv>
+  </sv-container>
+</page-header>
+
+<!-- Success Model -->
+<nz-card *ngIf="slaData.lastExecution != null">
+  <result
+    *ngIf="slaData.lastExecution && checkStatus(slaData)"
+    type="success"
+    [title]="'Last execution was successful'"
+    [description]="getExcuteDate"
+  >
+  </result>
+
+  <result
+    type="error"
+    [title]="'Last execution failed'"
+    [description]="getExcuteDate"
+    [extra]="resultExtra"
+    *ngIf="slaData.lastExecution && !checkStatus(slaData)"
+  >
+    <ng-template #resultExtra>
+      <div class="mb-md text-lg">Conditions Failed:</div>
+      <div class="mb-md" *ngFor="let item of loadFailureConditions()">
+        <i nz-icon nzType="close-circle" class="text-error pr-sm"></i> Condition
+        `{{ item.label }}` do not match with criteria the value is
+        {{ item.lastExecution.value }}
+      </div>
+    </ng-template>
+  </result>
+</nz-card>
+
+<!-- Error Model -->
+
+<nz-card [nzBordered]="false" class="mb-lg" nzTitle="Condition">
+  <nz-table #basicTable [nzData]="conditions">
+    <thead>
+      <tr>
+        <th>Label</th>
+        <th>Type</th>
+        <th>Condition</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of basicTable.data">
+        <td>{{ data.label }}</td>
+        <td>
+          <nz-tag nzColor="processing">{{ data.type }}</nz-tag>
+        </td>
+        <td>
+          <nz-row nzGutter="16" *ngIf="data.type == 'BACKEND'">
+            <nz-col nzLg="6" nzMd="12" nzSm="24">
+              <nz-form-item>
+                <nz-form-label nzFor="name">Service</nz-form-label>
+                <nz-form-control> {{ data.serviceName }} </nz-form-control>
+              </nz-form-item>
+            </nz-col>
+            <nz-col
+              [nzXl]="{ span: 6, offset: 2 }"
+              [nzLg]="{ span: 8 }"
+              [nzMd]="{ span: 12 }"
+              nzSm="24"
+            >
+              <nz-form-item>
+                <nz-form-label>Environment</nz-form-label>
+                <nz-form-control> {{ data.environment }} </nz-form-control>
+              </nz-form-item>
+            </nz-col>
+            <nz-col
+              [nzXl]="{ span: 8, offset: 2 }"
+              [nzLg]="{ span: 10 }"
+              [nzMd]="{ span: 24 }"
+              nzSm="24"
+            >
+              <nz-form-item>
+                <nz-form-label>Operator</nz-form-label>
+                <nz-form-control>
+                  {{ data.operator }} {{ data.value }}
+                </nz-form-control>
+              </nz-form-item>
+            </nz-col>
+          </nz-row>
+
+          <nz-row nzGutter="16" *ngIf="data.type != 'BACKEND'">
+            <nz-col>
+              <nz-form-item>
+                <nz-form-label nzFor="name">Domain</nz-form-label>
+                <nz-form-control> {{ data.url }} </nz-form-control>
+              </nz-form-item>
+            </nz-col>
+          </nz-row>
+        </td>
+        <td>
+          <nz-switch
+            [ngModel]="true"
+            [nzCheckedChildren]="checkedTemplate"
+            [nzUnCheckedChildren]="unCheckedTemplate"
+          ></nz-switch>
+          <ng-template #checkedTemplate
+            ><i nz-icon nzType="check"></i
+          ></ng-template>
+          <ng-template #unCheckedTemplate
+            ><i nz-icon nzType="close"></i
+          ></ng-template>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
